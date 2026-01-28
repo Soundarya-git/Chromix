@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Color Blender Pro</title>
+
+<style>
+:root {
+  --bg: #f5f7fb;
+  --card: #ffffff;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --accent: #6366f1;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--text);
+}
+
+.app {
+  width: 420px;
+  background: var(--card);
+  border-radius: 24px;
+  padding: 20px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.08);
+}
+
+/* Header */
+.header {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.header h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.header p {
+  margin: 5px 0 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* Preview */
+.preview {
+  height: 160px;
+  border-radius: 18px;
+  margin: 15px 0;
+}
+
+/* Color Inputs */
+.colors {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.color-box {
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.color-box input {
+  width: 70px;
+  height: 40px;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+}
+
+/* Sliders */
+.control {
+  margin-bottom: 12px;
+}
+
+.control label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.control input {
+  width: 100%;
+}
+
+/* Select */
+select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  margin-bottom: 15px;
+  font-size: 13px;
+}
+
+/* Output */
+.code {
+  background: #f1f5f9;
+  border-radius: 12px;
+  padding: 10px;
+  font-size: 12px;
+  word-break: break-all;
+  margin-bottom: 12px;
+  user-select: all;
+}
+
+/* Buttons */
+.buttons {
+  display: flex;
+  gap: 10px;
+}
+
+button {
+  flex: 1;
+  padding: 12px;
+  border-radius: 14px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.copy {
+  background: var(--accent);
+  color: #fff;
+}
+
+.save {
+  background: #111827;
+  color: #fff;
+}
+
+/* Favorites */
+.favorites {
+  margin-top: 15px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+  gap: 10px;
+}
+
+.fav {
+  height: 40px;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+  <div class="header">
+    <h2>🎨 Color Blender Pro</h2>
+    <p>Create & save beautiful gradients</p>
+  </div>
+
+  <div class="preview" id="preview"></div>
+
+  <div class="colors">
+    <div class="color-box">
+      <input type="color" id="c1" value="#6366f1">
+      <div>Color 1</div>
+    </div>
+    <div class="color-box">
+      <input type="color" id="c2" value="#22d3ee">
+      <div>Color 2</div>
+    </div>
+    <div class="color-box">
+      <input type="color" id="c3" value="#a855f7">
+      <div>Color 3</div>
+    </div>
+  </div>
+
+  <div class="control">
+    <label>Blend Ratio</label>
+    <input type="range" id="s1" min="0" max="100" value="30">
+    <input type="range" id="s2" min="0" max="100" value="60">
+    <input type="range" id="s3" min="0" max="100" value="100">
+  </div>
+
+  <select id="direction">
+    <option value="to right">Left → Right</option>
+    <option value="to bottom">Top → Bottom</option>
+    <option value="135deg">Diagonal</option>
+  </select>
+
+  <div class="code" id="cssCode"></div>
+
+  <div class="buttons">
+    <button class="copy" onclick="copyCSS()">Copy CSS</button>
+    <button class="save" onclick="saveFav()">Save</button>
+  </div>
+
+  <div class="favorites" id="favorites"></div>
+</div>
+
+<script>
+const c1 = document.getElementById("c1");
+const c2 = document.getElementById("c2");
+const c3 = document.getElementById("c3");
+const s1 = document.getElementById("s1");
+const s2 = document.getElementById("s2");
+const s3 = document.getElementById("s3");
+const direction = document.getElementById("direction");
+const preview = document.getElementById("preview");
+const cssCode = document.getElementById("cssCode");
+const favorites = document.getElementById("favorites");
+
+function update() {
+  const grad = `linear-gradient(${direction.value},
+    ${c1.value} ${s1.value}%,
+    ${c2.value} ${s2.value}%,
+    ${c3.value} ${s3.value}%)`;
+
+  preview.style.background = grad;
+  cssCode.textContent = grad;
+}
+
+[c1,c2,c3,s1,s2,s3,direction].forEach(el =>
+  el.addEventListener("input", update)
+);
+
+function copyCSS() {
+  navigator.clipboard.writeText(cssCode.textContent);
+  alert("Copied!");
+}
+
+function saveFav() {
+  const d = document.createElement("div");
+  d.className = "fav";
+  d.style.background = preview.style.background;
+  d.onclick = () => {
+    preview.style.background = d.style.background;
+    cssCode.textContent = d.style.background;
+  };
+  favorites.appendChild(d);
+}
+
+update();
+</script>
+
+</body>
+</html>
